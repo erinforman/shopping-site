@@ -77,7 +77,7 @@ def show_shopping_cart():
     # been added to the session
     order_total = 0
 
-    melons = []
+    cart_melons = []
 
     #extrapolates cart dictionary from session dictionary
     cart = session.get("cart", {})
@@ -86,15 +86,14 @@ def show_shopping_cart():
         melon = melons.get_by_id(melon_id)
 
         total_cost = melon.price * quantity
-        order_total += melon_cost
+        order_total += total_cost
 
         melon.quantity = quantity
         melon.total_cost = total_cost
 
-        melons.append(melon)
+        cart_melons.append(melon)
 
-
-    return render_template(cart=cart,total_cost=total_cost,"cart.html")
+    return render_template("cart.html", melons=cart_melons,order_total=order_total)
 
 
 @app.route("/add_to_cart/<melon_id>")
@@ -116,11 +115,14 @@ def add_to_cart(melon_id):
     # - flash a success message
     # - redirect the user to the cart page
     #print(melon_id)
-    cart = session.get("cart", {})
+    if 'cart' in session:
+        cart = session['cart']
+    else:
+        cart = session['cart'] = {}
 
     cart[melon_id] = cart.get(melon_id, 0) + 1
 
-    print(cart)
+    #print(cart)
 
 
     flash("Melon successfully added to cart!")
