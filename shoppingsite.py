@@ -6,7 +6,7 @@ put melons in a shopping cart.
 Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 """
 
-from flask import Flask, render_template, redirect, flash, session
+from flask import Flask, render_template, redirect, flash, session, request
 import jinja2
 
 import melons
@@ -49,7 +49,7 @@ def show_melon(melon_id):
     """
 
     melon = melons.get_by_id(melon_id)
-    print(melon)
+
     return render_template("melon_details.html",
                            display_melon=melon)
 
@@ -75,8 +75,26 @@ def show_shopping_cart():
     #
     # Make sure your function can also handle the case wherein no cart has
     # been added to the session
+    order_total = 0
 
-    return render_template("cart.html")
+    melons = []
+
+    #extrapolates cart dictionary from session dictionary
+    cart = session.get("cart", {})
+
+    for melon_id, quantity in cart.items():
+        melon = melons.get_by_id(melon_id)
+
+        total_cost = melon.price * quantity
+        order_total += melon_cost
+
+        melon.quantity = quantity
+        melon.total_cost = total_cost
+
+        melons.append(melon)
+
+
+    return render_template(cart=cart,total_cost=total_cost,"cart.html")
 
 
 @app.route("/add_to_cart/<melon_id>")
@@ -97,8 +115,17 @@ def add_to_cart(melon_id):
     # - increment the count for that melon id by 1
     # - flash a success message
     # - redirect the user to the cart page
+    #print(melon_id)
+    cart = session.get("cart", {})
 
-    return "Oops! This needs to be implemented!"
+    cart[melon_id] = cart.get(melon_id, 0) + 1
+
+    print(cart)
+
+
+    flash("Melon successfully added to cart!")
+
+    return redirect("/cart")
 
 
 @app.route("/login", methods=["GET"])
@@ -130,6 +157,8 @@ def process_login():
     # - if they don't, flash a failure message and redirect back to "/login"
     # - do the same if a Customer with that email doesn't exist
 
+
+
     return "Oops! This needs to be implemented"
 
 
@@ -145,4 +174,4 @@ def checkout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
